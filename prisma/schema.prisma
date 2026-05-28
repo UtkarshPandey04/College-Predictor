@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  saved    SavedCollege[]
+  compares CompareItem[]
+  reviews  Review[]
+}
+
+model College {
+  id              String  @id @default(cuid())
+  name            String
+  shortName       String
+  location        String
+  state           String
+  type            String
+  rating          Float
+  feesPerYear     Int
+  avgPackage      Int
+  highestPackage  Int
+  placementRate   Int
+  ranking         Int
+  establishedYear Int
+  campusSize      String
+  totalStudents   Int
+  facultyCount    Int
+  naacGrade       String
+  hasHostel       Boolean @default(true)
+  hasSports       Boolean @default(true)
+  description     String
+  cutoff          String
+  website         String?
+
+  courses    Course[]
+  reviews    Review[]
+  saved      SavedCollege[]
+  compareA   CompareItem[]  @relation("CollegeA")
+  compareB   CompareItem[]  @relation("CollegeB")
+  compareC   CompareItem[]  @relation("CollegeC")
+  placements PlacementStat[]
+  recruiters Recruiter[]
+}
+
+model Course {
+  id         String  @id @default(cuid())
+  name       String
+  duration   String
+  degree     String
+  seats      Int?
+  collegeId  String
+  college    College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  text      String
+  pros      String?
+  cons      String?
+  batch     String?
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collegeId String
+  college   College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}
+
+model SavedCollege {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collegeId String
+  college   College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, collegeId])
+}
+
+model CompareItem {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collegeAId String
+  collegeBId String
+  collegeCId String?
+  collegeA   College  @relation("CollegeA", fields: [collegeAId], references: [id])
+  collegeB   College  @relation("CollegeB", fields: [collegeBId], references: [id])
+  collegeC   College? @relation("CollegeC", fields: [collegeCId], references: [id])
+}
+
+model PlacementStat {
+  id        String  @id @default(cuid())
+  sector    String
+  percent   Int
+  collegeId String
+  college   College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}
+
+model Recruiter {
+  id        String  @id @default(cuid())
+  name      String
+  tier      String  @default("top")
+  collegeId String
+  college   College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,490 @@
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log('Seeding database...');
+
+  // Clear existing data
+  await prisma.review.deleteMany();
+  await prisma.recruiter.deleteMany();
+  await prisma.placementStat.deleteMany();
+  await prisma.course.deleteMany();
+  await prisma.savedCollege.deleteMany();
+  await prisma.compareItem.deleteMany();
+  await prisma.college.deleteMany();
+  await prisma.user.deleteMany();
+
+  // Demo user
+  const hashedPassword = await bcrypt.hash('password123', 10);
+  const demoUser = await prisma.user.create({
+    data: {
+      name: 'Demo User',
+      email: 'demo@univfind.in',
+      password: hashedPassword,
+    },
+  });
+
+  const collegesData = [
+    {
+      name: 'IIT Bombay',
+      shortName: 'IITB',
+      location: 'Mumbai, Maharashtra',
+      state: 'Maharashtra',
+      type: 'IIT',
+      rating: 4.8,
+      feesPerYear: 220000,
+      avgPackage: 2100000,
+      highestPackage: 12000000,
+      placementRate: 98,
+      ranking: 1,
+      establishedYear: 1958,
+      campusSize: '550 acres',
+      totalStudents: 10000,
+      facultyCount: 800,
+      naacGrade: 'A++',
+      hasHostel: true,
+      hasSports: true,
+      description: "IIT Bombay is India's premier engineering institution, consistently ranked among the top universities in Asia. Known for its world-class research facilities, exceptional faculty, and outstanding industry connections, IITB has produced some of India's most successful engineers, entrepreneurs, and scientists.",
+      cutoff: 'JEE Advanced Rank < 100',
+      website: 'https://www.iitb.ac.in',
+      courses: [
+        { name: 'B.Tech Computer Science', duration: '4 Years', degree: 'B.Tech', seats: 120 },
+        { name: 'B.Tech Electrical Engineering', duration: '4 Years', degree: 'B.Tech', seats: 90 },
+        { name: 'B.Tech Mechanical Engineering', duration: '4 Years', degree: 'B.Tech', seats: 80 },
+        { name: 'B.Tech Civil Engineering', duration: '4 Years', degree: 'B.Tech', seats: 60 },
+        { name: 'M.Tech Artificial Intelligence', duration: '2 Years', degree: 'M.Tech', seats: 40 },
+        { name: 'PhD Computer Science', duration: '5 Years', degree: 'PhD', seats: 30 },
+      ],
+      placements: [
+        { sector: 'IT / Software', percent: 55 },
+        { sector: 'Consulting', percent: 15 },
+        { sector: 'Finance', percent: 12 },
+        { sector: 'Core Engineering', percent: 10 },
+        { sector: 'Research / Academia', percent: 8 },
+      ],
+      recruiters: ['Google', 'Microsoft', 'Amazon', 'Goldman Sachs', 'McKinsey', 'Apple', 'Meta', 'Intel'],
+      reviews: [
+        { rating: 5, text: 'Incredible campus, brilliant peers and outstanding faculty. Life-changing experience. The opportunities here are unmatched anywhere in India.', pros: 'World-class research, amazing alumni network', cons: 'Very competitive, can be stressful', batch: '2023' },
+        { rating: 4, text: 'Great infrastructure and research opportunities. The academic pressure is intense but manageable if you are passionate about your field.', pros: 'Excellent placements, great peer group', cons: 'Workload can be overwhelming', batch: '2022' },
+      ],
+    },
+    {
+      name: 'IIT Delhi',
+      shortName: 'IITD',
+      location: 'New Delhi',
+      state: 'Delhi',
+      type: 'IIT',
+      rating: 4.7,
+      feesPerYear: 200000,
+      avgPackage: 1950000,
+      highestPackage: 11000000,
+      placementRate: 97,
+      ranking: 2,
+      establishedYear: 1961,
+      campusSize: '325 acres',
+      totalStudents: 8500,
+      facultyCount: 620,
+      naacGrade: 'A+',
+      hasHostel: true,
+      hasSports: true,
+      description: "IIT Delhi is one of India's most prestigious institutions, strategically located in the national capital. With strong industry connections across Delhi-NCR and a vibrant startup ecosystem, IITD provides unparalleled opportunities for students to network with industry leaders and policy makers.",
+      cutoff: 'JEE Advanced Rank < 150',
+      website: 'https://home.iitd.ac.in',
+      courses: [
+        { name: 'B.Tech Computer Science', duration: '4 Years', degree: 'B.Tech', seats: 100 },
+        { name: 'B.Tech Electrical Engineering', duration: '4 Years', degree: 'B.Tech', seats: 80 },
+        { name: 'B.Tech Civil Engineering', duration: '4 Years', degree: 'B.Tech', seats: 70 },
+        { name: 'M.Tech Data Science', duration: '2 Years', degree: 'M.Tech', seats: 35 },
+        { name: 'MBA Technology Management', duration: '2 Years', degree: 'MBA', seats: 50 },
+      ],
+      placements: [
+        { sector: 'IT / Software', percent: 50 },
+        { sector: 'Consulting', percent: 20 },
+        { sector: 'Finance', percent: 15 },
+        { sector: 'Core Engineering', percent: 10 },
+        { sector: 'Others', percent: 5 },
+      ],
+      recruiters: ['McKinsey', 'Flipkart', 'Tesla', 'Deutsche Bank', 'Adobe', 'Samsung', 'Uber', 'Bain & Co'],
+      reviews: [
+        { rating: 5, text: 'Best decision of my life. Faculty is exceptional and opportunities abound. Being in Delhi gives amazing access to government and industry.', pros: 'Great location, top faculty', cons: 'Campus could be larger', batch: '2023' },
+        { rating: 4, text: 'Very competitive atmosphere but the learnings are immense. The alumni network is incredibly active and supportive.', pros: 'Strong alumni network, great placements', cons: 'High pressure environment', batch: '2023' },
+      ],
+    },
+    {
+      name: 'IIT Madras',
+      shortName: 'IITM',
+      location: 'Chennai, Tamil Nadu',
+      state: 'Tamil Nadu',
+      type: 'IIT',
+      rating: 4.7,
+      feesPerYear: 210000,
+      avgPackage: 1800000,
+      highestPackage: 9500000,
+      placementRate: 96,
+      ranking: 3,
+      establishedYear: 1959,
+      campusSize: '620 acres',
+      totalStudents: 9000,
+      facultyCount: 700,
+      naacGrade: 'A++',
+      hasHostel: true,
+      hasSports: true,
+      description: "Nestled in a stunning forested campus complete with resident deer and peacocks, IIT Madras combines natural beauty with academic excellence. IITM is a hotbed of entrepreneurship with one of the most active startup ecosystems among Indian technical institutions.",
+      cutoff: 'JEE Advanced Rank < 200',
+      website: 'https://www.iitm.ac.in',
+      courses: [
+        { name: 'B.Tech Computer Science', duration: '4 Years', degree: 'B.Tech', seats: 110 },
+        { name: 'B.Tech Chemical Engineering', duration: '4 Years', degree: 'B.Tech', seats: 60 },
+        { name: 'B.Tech Aerospace Engineering', duration: '4 Years', degree: 'B.Tech', seats: 45 },
+        { name: 'M.Tech Machine Learning', duration: '2 Years', degree: 'M.Tech', seats: 40 },
+        { name: 'PhD Materials Science', duration: '5 Years', degree: 'PhD', seats: 20 },
+      ],
+      placements: [
+        { sector: 'IT / Software', percent: 60 },
+        { sector: 'Research / Academia', percent: 15 },
+        { sector: 'Consulting', percent: 10 },
+        { sector: 'Core Engineering', percent: 8 },
+        { sector: 'Finance', percent: 7 },
+      ],
+      recruiters: ['Apple', 'Adobe', 'Uber', 'Zomato', 'Swiggy', 'Qualcomm', 'Texas Instruments', 'ISRO'],
+      reviews: [
+        { rating: 5, text: 'Lush green campus with deer roaming around. Academics are top-notch and the startup culture is truly inspiring. Built two companies during my stay here.', pros: 'Beautiful campus, great startup ecosystem', cons: 'Chennai weather can be tough', batch: '2022' },
+        { rating: 4, text: 'Strong research ecosystem. The professors are world-class and very approachable. Great for anyone interested in deep research or entrepreneurship.', pros: 'Research opportunities, entrepreneurship support', cons: 'Far from city center', batch: '2023' },
+      ],
+    },
+    {
+      name: 'BITS Pilani',
+      shortName: 'BITS',
+      location: 'Pilani, Rajasthan',
+      state: 'Rajasthan',
+      type: 'Private',
+      rating: 4.5,
+      feesPerYear: 520000,
+      avgPackage: 1200000,
+      highestPackage: 5000000,
+      placementRate: 92,
+      ranking: 8,
+      establishedYear: 1964,
+      campusSize: '328 acres',
+      totalStudents: 13000,
+      facultyCount: 900,
+      naacGrade: 'A',
+      hasHostel: true,
+      hasSports: true,
+      description: "BITS Pilani is India's top private engineering institution, famous for its Practice School program that provides real industry experience to students. The dual-degree program is unique and highly sought after, allowing students to pursue two disciplines simultaneously.",
+      cutoff: 'BITSAT Score > 350',
+      website: 'https://www.bits-pilani.ac.in',
+      courses: [
+        { name: 'B.E. Computer Science', duration: '4 Years', degree: 'B.E.', seats: 180 },
+        { name: 'B.E. Electronics & Electrical', duration: '4 Years', degree: 'B.E.', seats: 120 },
+        { name: 'B.Pharm', duration: '4 Years', degree: 'B.Pharm', seats: 80 },
+        { name: 'MSc Mathematics', duration: '5 Years', degree: 'MSc', seats: 60 },
+        { name: 'MBA', duration: '2 Years', degree: 'MBA', seats: 100 },
+      ],
+      placements: [
+        { sector: 'IT / Software', percent: 65 },
+        { sector: 'Finance', percent: 10 },
+        { sector: 'Consulting', percent: 10 },
+        { sector: 'Core Engineering', percent: 8 },
+        { sector: 'Others', percent: 7 },
+      ],
+      recruiters: ['Samsung', 'Oracle', 'Qualcomm', 'Deloitte', 'Goldman Sachs', 'Microsoft', 'Walmart Labs', 'Uber'],
+      reviews: [
+        { rating: 5, text: 'Best private college in India, no doubt. The Practice School program gives you real industry experience that no other college offers. Worth every rupee.', pros: 'Practice School, great brand value', cons: 'Very expensive', batch: '2023' },
+        { rating: 4, text: 'Expensive but totally worth the investment. The alumni network is incredibly strong. Peer learning is exceptional here.', pros: 'Strong alumni network, peer learning', cons: 'Location is isolated', batch: '2022' },
+      ],
+    },
+    {
+      name: 'NIT Trichy',
+      shortName: 'NITT',
+      location: 'Tiruchirappalli, Tamil Nadu',
+      state: 'Tamil Nadu',
+      type: 'NIT',
+      rating: 4.4,
+      feesPerYear: 150000,
+      avgPackage: 980000,
+      highestPackage: 4000000,
+      placementRate: 90,
+      ranking: 10,
+      establishedYear: 1964,
+      campusSize: '800 acres',
+      totalStudents: 6000,
+      facultyCount: 400,
+      naacGrade: 'A',
+      hasHostel: true,
+      hasSports: true,
+      description: "NIT Trichy is the premier National Institute of Technology, consistently ranked as the best NIT in India. With its sprawling campus and excellent academic programs, NITT provides quality technical education at an affordable cost.",
+      cutoff: 'JEE Mains Rank < 5000',
+      website: 'https://www.nitt.edu',
+      courses: [
+        { name: 'B.Tech Computer Science', duration: '4 Years', degree: 'B.Tech', seats: 90 },
+        { name: 'B.Tech Electronics & Communication', duration: '4 Years', degree: 'B.Tech', seats: 80 },
+        { name: 'B.Tech Mechanical Engineering', duration: '4 Years', degree: 'B.Tech', seats: 70 },
+        { name: 'M.Tech VLSI Design', duration: '2 Years', degree: 'M.Tech', seats: 30 },
+      ],
+      placements: [
+        { sector: 'IT / Software', percent: 70 },
+        { sector: 'Core Engineering', percent: 15 },
+        { sector: 'Consulting', percent: 5 },
+        { sector: 'Finance', percent: 5 },
+        { sector: 'Others', percent: 5 },
+      ],
+      recruiters: ['TCS', 'Infosys', 'KPIT', 'L&T', 'Wipro', 'HCL', 'Zoho', 'Samsung'],
+      reviews: [
+        { rating: 4, text: 'Great faculty and placements for a government college. Good value for money. The campus life is vibrant with many technical and cultural fests.', pros: 'Affordable fees, good placements', cons: 'Infrastructure could be better', batch: '2023' },
+        { rating: 4, text: 'Solid infrastructure and active student clubs. The best NIT experience you can get. Strong placement cell.', pros: 'Strong placement cell, active clubs', cons: 'City has limited entertainment options', batch: '2022' },
+      ],
+    },
+    {
+      name: 'IIM Ahmedabad',
+      shortName: 'IIMA',
+      location: 'Ahmedabad, Gujarat',
+      state: 'Gujarat',
+      type: 'IIM',
+      rating: 4.9,
+      feesPerYear: 1150000,
+      avgPackage: 3200000,
+      highestPackage: 11000000,
+      placementRate: 100,
+      ranking: 1,
+      establishedYear: 1961,
+      campusSize: '100 acres',
+      totalStudents: 1200,
+      facultyCount: 110,
+      naacGrade: 'A++',
+      hasHostel: true,
+      hasSports: false,
+      description: "IIM Ahmedabad is India's top business school and among the best in the world. With a 100% placement record and an unmatched alumni network spanning every major industry, IIMA is the gold standard for management education in Asia.",
+      cutoff: 'CAT Percentile > 99',
+      website: 'https://www.iima.ac.in',
+      courses: [
+        { name: 'MBA (PGP)', duration: '2 Years', degree: 'MBA', seats: 380 },
+        { name: 'PGDM', duration: '1 Year', degree: 'PGDM', seats: 60 },
+        { name: 'Fellow Program in Management', duration: '5 Years', degree: 'FPM', seats: 20 },
+        { name: 'PGPX (Executive MBA)', duration: '1 Year', degree: 'PGPX', seats: 80 },
+      ],
+      placements: [
+        { sector: 'Consulting', percent: 35 },
+        { sector: 'Finance', percent: 25 },
+        { sector: 'IT / Software', percent: 15 },
+        { sector: 'FMCG / Consumer', percent: 15 },
+        { sector: 'Others', percent: 10 },
+      ],
+      recruiters: ['BCG', 'Bain & Co', 'JP Morgan', 'Amazon', 'McKinsey', 'Kotak', 'Unilever', 'P&G'],
+      reviews: [
+        { rating: 5, text: 'Grueling but transformative. The alumni network opens every door. The case study method of teaching changes how you think about every business problem.', pros: '100% placements, unbeatable alumni network', cons: 'Extremely high pressure, very expensive', batch: '2023' },
+        { rating: 5, text: 'Transformational two years. The best MBA in Asia, bar none. The brand alone opens doors that no other college can.', pros: 'Best brand in Indian MBA, top recruiters', cons: 'Work-life balance is non-existent', batch: '2022' },
+      ],
+    },
+    {
+      name: 'Delhi University',
+      shortName: 'DU',
+      location: 'New Delhi',
+      state: 'Delhi',
+      type: 'Deemed',
+      rating: 4.2,
+      feesPerYear: 35000,
+      avgPackage: 550000,
+      highestPackage: 1800000,
+      placementRate: 75,
+      ranking: 15,
+      establishedYear: 1922,
+      campusSize: '300 acres',
+      totalStudents: 300000,
+      facultyCount: 5000,
+      naacGrade: 'A+',
+      hasHostel: true,
+      hasSports: true,
+      description: "University of Delhi is India's largest and most prestigious central university. With over 90 colleges and a vibrant campus culture spanning North and South Delhi campuses, DU offers diverse academic programs across arts, science, commerce, and law.",
+      cutoff: 'CUET Score > 95 percentile',
+      website: 'https://www.du.ac.in',
+      courses: [
+        { name: 'B.A. (Hons) Economics', duration: '3 Years', degree: 'B.A.', seats: 200 },
+        { name: 'B.Sc (Hons) Mathematics', duration: '3 Years', degree: 'B.Sc', seats: 150 },
+        { name: 'B.Com (Hons)', duration: '3 Years', degree: 'B.Com', seats: 250 },
+        { name: 'LLB', duration: '3 Years', degree: 'LLB', seats: 120 },
+        { name: 'MA English', duration: '2 Years', degree: 'MA', seats: 80 },
+      ],
+      placements: [
+        { sector: 'Media / Publishing', percent: 25 },
+        { sector: 'Finance', percent: 20 },
+        { sector: 'Consulting', percent: 15 },
+        { sector: 'Law', percent: 20 },
+        { sector: 'Others', percent: 20 },
+      ],
+      recruiters: ['Deloitte', 'KPMG', 'Times Group', 'HT Media', 'EY', 'PwC', 'Niti Aayog', 'HDFC'],
+      reviews: [
+        { rating: 4, text: 'Rich academic culture with students from all over India. The college festivals are legendary. DU teaches you how to think, debate and form opinions.', pros: 'Vibrant campus life, affordable fees', cons: 'Job placement support is inconsistent', batch: '2023' },
+        { rating: 3, text: 'Good courses in social sciences and humanities. The peer group is diverse and intellectually stimulating. But placement support varies widely by college.', pros: 'Diverse peer group, great humanities programs', cons: 'Placement support varies by college', batch: '2022' },
+      ],
+    },
+    {
+      name: 'VIT Vellore',
+      shortName: 'VIT',
+      location: 'Vellore, Tamil Nadu',
+      state: 'Tamil Nadu',
+      type: 'Private',
+      rating: 4.1,
+      feesPerYear: 380000,
+      avgPackage: 720000,
+      highestPackage: 3200000,
+      placementRate: 85,
+      ranking: 20,
+      establishedYear: 1984,
+      campusSize: '372 acres',
+      totalStudents: 35000,
+      facultyCount: 2400,
+      naacGrade: 'A++',
+      hasHostel: true,
+      hasSports: true,
+      description: "VIT Vellore is one of India's largest private universities with a strong focus on technology education and international collaborations. With tie-ups with over 400 international universities, VIT offers unique global exposure opportunities to its students.",
+      cutoff: 'VITEEE Score > 80 percentile',
+      website: 'https://vit.ac.in',
+      courses: [
+        { name: 'B.Tech Computer Science', duration: '4 Years', degree: 'B.Tech', seats: 500 },
+        { name: 'B.Tech Information Technology', duration: '4 Years', degree: 'B.Tech', seats: 300 },
+        { name: 'B.Tech Electronics & Communication', duration: '4 Years', degree: 'B.Tech', seats: 400 },
+        { name: 'M.Tech Software Engineering', duration: '2 Years', degree: 'M.Tech', seats: 120 },
+        { name: 'MBA', duration: '2 Years', degree: 'MBA', seats: 200 },
+      ],
+      placements: [
+        { sector: 'IT / Software', percent: 78 },
+        { sector: 'Core Engineering', percent: 8 },
+        { sector: 'Finance', percent: 5 },
+        { sector: 'Consulting', percent: 4 },
+        { sector: 'Others', percent: 5 },
+      ],
+      recruiters: ['Wipro', 'HCL', 'Cognizant', 'Mindtree', 'TCS', 'Capgemini', 'Zoho', 'Infosys'],
+      reviews: [
+        { rating: 4, text: 'Great infrastructure and huge campus. Many international opportunities and exchange programs. Good for IT placements.', pros: 'Great infrastructure, international exposure', cons: 'Large student body can feel impersonal', batch: '2023' },
+        { rating: 3, text: 'Good for placements in IT sector. Can be overwhelming due to the large number of students. But the facilities are world-class.', pros: 'Good placement record in IT, modern facilities', cons: 'Too many students, competition is fierce', batch: '2022' },
+      ],
+    },
+    {
+      name: 'IIT Kanpur',
+      shortName: 'IITK',
+      location: 'Kanpur, Uttar Pradesh',
+      state: 'Uttar Pradesh',
+      type: 'IIT',
+      rating: 4.6,
+      feesPerYear: 215000,
+      avgPackage: 1750000,
+      highestPackage: 10000000,
+      placementRate: 95,
+      ranking: 4,
+      establishedYear: 1959,
+      campusSize: '1055 acres',
+      totalStudents: 8000,
+      facultyCount: 600,
+      naacGrade: 'A+',
+      hasHostel: true,
+      hasSports: true,
+      description: "IIT Kanpur is renowned for its pioneering curriculum design and strong emphasis on fundamental sciences. IITK was the first institution in India to offer computer science education and has a rich tradition of academic innovation.",
+      cutoff: 'JEE Advanced Rank < 300',
+      website: 'https://www.iitk.ac.in',
+      courses: [
+        { name: 'B.Tech Computer Science', duration: '4 Years', degree: 'B.Tech', seats: 90 },
+        { name: 'B.Tech Aerospace Engineering', duration: '4 Years', degree: 'B.Tech', seats: 45 },
+        { name: 'B.Tech Physics', duration: '4 Years', degree: 'B.Tech', seats: 40 },
+        { name: 'M.Tech AI & ML', duration: '2 Years', degree: 'M.Tech', seats: 35 },
+      ],
+      placements: [
+        { sector: 'IT / Software', percent: 52 },
+        { sector: 'Research / Academia', percent: 18 },
+        { sector: 'Consulting', percent: 12 },
+        { sector: 'Finance', percent: 10 },
+        { sector: 'Core Engineering', percent: 8 },
+      ],
+      recruiters: ['Microsoft', 'Google', 'NVIDIA', 'Goldman Sachs', 'DE Shaw', 'Qualcomm', 'DRDO', 'ISRO'],
+      reviews: [
+        { rating: 5, text: 'IITK is paradise for those who love learning. The grading system is fair and professors are truly world experts. The CS department is legendary.', pros: 'Top CS department, great research culture', cons: 'Located in a small city', batch: '2023' },
+        { rating: 4, text: 'Academic freedom is exceptional here. You can pursue interests across departments. The legacy of CS education here is unmatched in India.', pros: 'Academic flexibility, brilliant faculty', cons: 'Campus is far from city amenities', batch: '2022' },
+      ],
+    },
+    {
+      name: 'Jadavpur University',
+      shortName: 'JU',
+      location: 'Kolkata, West Bengal',
+      state: 'West Bengal',
+      type: 'Deemed',
+      rating: 4.3,
+      feesPerYear: 25000,
+      avgPackage: 850000,
+      highestPackage: 3500000,
+      placementRate: 82,
+      ranking: 12,
+      establishedYear: 1955,
+      campusSize: '160 acres',
+      totalStudents: 16000,
+      facultyCount: 800,
+      naacGrade: 'A',
+      hasHostel: true,
+      hasSports: true,
+      description: "Jadavpur University is one of India's finest universities with exceptional programs in engineering, arts, and science. Known for producing outstanding graduates at minimal cost, JU offers one of the best value-for-money education in the country.",
+      cutoff: 'WBJEE Rank < 2000',
+      website: 'https://jadavpuruniversity.in',
+      courses: [
+        { name: 'B.E. Computer Science', duration: '4 Years', degree: 'B.E.', seats: 80 },
+        { name: 'B.E. Electronics & Tele-communication', duration: '4 Years', degree: 'B.E.', seats: 70 },
+        { name: 'B.Sc Physics', duration: '3 Years', degree: 'B.Sc', seats: 60 },
+        { name: 'M.E. Computer Science', duration: '2 Years', degree: 'M.E.', seats: 30 },
+      ],
+      placements: [
+        { sector: 'IT / Software', percent: 65 },
+        { sector: 'Core Engineering', percent: 12 },
+        { sector: 'Research / Academia', percent: 10 },
+        { sector: 'Finance', percent: 8 },
+        { sector: 'Others', percent: 5 },
+      ],
+      recruiters: ['TCS', 'Infosys', 'IBM', 'Accenture', 'Wipro', 'HCL', 'Cognizant', 'ITC'],
+      reviews: [
+        { rating: 4, text: 'Incredible value for money. The quality of education rivals IITs at a fraction of the cost. Faculty is dedicated and research-oriented.', pros: 'Very affordable, quality education', cons: 'Placement cell not very proactive', batch: '2023' },
+        { rating: 4, text: 'Great academic culture and very autonomous student life. JU teaches you to be independent and think critically.', pros: 'Academic freedom, great peer group', cons: 'Infrastructure needs upgrading', batch: '2022' },
+      ],
+    },
+  ];
+
+  for (const collegeData of collegesData) {
+    const { courses, placements, recruiters, reviews, ...collegeMeta } = collegeData;
+
+    const college = await prisma.college.create({
+      data: {
+        ...collegeMeta,
+        courses: {
+          create: courses,
+        },
+        placements: {
+          create: placements,
+        },
+        recruiters: {
+          create: recruiters.map((name, i) => ({ name, tier: i < 3 ? 'premium' : 'top' })),
+        },
+      },
+    });
+
+    // Create reviews linked to demo user
+    for (const review of reviews) {
+      await prisma.review.create({
+        data: {
+          ...review,
+          userId: demoUser.id,
+          collegeId: college.id,
+        },
+      });
+    }
+  }
+
+  console.log('✅ Database seeded successfully!');
+  console.log('📧 Demo login: demo@univfind.in / password123');
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
